@@ -1,0 +1,6 @@
+venv/
+.venv/
+__pycache__/
+uploads/
+*.pyc
+candidate_rankings.csv
