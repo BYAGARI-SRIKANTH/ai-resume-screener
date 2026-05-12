@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Resume Screening System</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            padding: 40px;
+            color: #111827;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 50px;
+            margin-bottom: 40px;
+            color: #0f172a;
+        }
+
+        .form-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .form-box label {
+            font-size: 26px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 220px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            font-size: 18px;
+            resize: none;
+            margin-bottom: 25px;
+        }
+
+        .upload-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type=file] {
+            font-size: 16px;
+        }
+
+        button {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1e293b;
+        }
+
+        .stats {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: #0f172a;
+            color: white;
+            padding: 30px;
+            border-radius: 18px;
+            min-width: 220px;
+            text-align: center;
+            box-shadow: 0px 5px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .skills-box {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            margin-bottom: 40px;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .skills-box h2 {
+            margin-bottom: 20px;
+            color: #0f172a;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            margin: 8px;
+            font-size: 15px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+            font-size: 18px;
+        }
+
+        td {
+            padding: 20px;
+            text-align: center;
+            vertical-align: top;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 16px;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .top-rank {
+            background: #fff8dc;
+        }
+
+        .score {
+            font-size: 30px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: #d1d5db;
+            border-radius: 20px;
+            overflow: hidden;
+            height: 18px;
+        }
+
+        .progress {
+            height: 18px;
+            background: orange;
+        }
+
+        .good {
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .excellent {
+            color: green;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .average {
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .download-btn {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .download-btn a {
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>AI Resume Screening System</h1>
+
+        <div class="form-box">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <label>Paste Job Description</label>
+
+                <textarea
+                    name="job_description"
+                    placeholder="Paste job description here..."
+                    required
+                ></textarea>
+
+                <div class="upload-section">
+
+                    <input
+                        type="file"
+                        name="resume"
+                        multiple
+                        required
+                    >
+
+                    <button type="submit">
+                        Upload Resume
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        {% if results %}
+
+        <div class="stats">
+
+            <div class="card">
+                <h3>Total Resumes</h3>
+                <p>{{ total_resumes }}</p>
+            </div>
+
+        </div>
+
+        <div class="skills-box">
+
+            <h2>Detected Job Skills</h2>
+
+            {% for skill in detected_jd_skills %}
+
+                <span class="skill-tag">
+                    {{ skill }}
+                </span>
+
+            {% endfor %}
+
+        </div>
+
+        <h1 style="font-size:45px; margin-bottom:30px;">
+            Candidate Rankings
+        </h1>
+
+        <div class="table-container">
+
+            <table>
+
+                <tr>
+
+                    <th>Rank</th>
+
+                    <th>Resume</th>
+
+                    <th>Email</th>
+
+                    <th>Phone</th>
+
+                    <th>AI Score</th>
+
+                    <th>Recommendation</th>
+
+                    <th>Matched Skills</th>
+
+                    <th>Missing Skills</th>
+
+                    <th>AI Feedback</th>
+
+                    <th>Interview Questions</th>
+
+                </tr>
+
+                {% for candidate in results %}
+
+                <tr
+
+                {% if loop.index == 1 %}
+
+                    class="top-rank"
+
+                {% endif %}
+
+                >
+
+                    <td>
+                        <b>#{{ loop.index }}</b>
+                    </td>
+
+                    <td>
+                        <b>{{ candidate.filename }}</b>
+                    </td>
+
+                    <td>
+                        {{ candidate.email }}
+                    </td>
+
+                    <td>
+                        {{ candidate.phone }}
+                    </td>
+
+                    <td>
+
+                        <div class="score">
+                            {{ "%.2f"|format(candidate.score) }}%
+                        </div>
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress"
+                                style="width: {{ candidate.score }}%;"
+                            ></div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        {% if candidate.score >= 75 %}
+
+                            <span class="excellent">
+                                Excellent Match
+                            </span>
+
+                        {% elif candidate.score >= 50 %}
+
+                            <span class="good">
+                                Good Match
+                            </span>
+
+                        {% else %}
+
+                            <span class="average">
+                                Needs Improvement
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {{ candidate.matched }}
+
+                    </td>
+
+                    <td>
+
+                        {{ candidate.missing }}
+
+                    </td>
+
+                    <td>
+
+                        {{ candidate.feedback }}
+
+                    </td>
+
+                    <td>
+
+                        <ul>
+
+                            {% for question in candidate.questions %}
+
+                                <li>
+                                    {{ question }}
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        <div class="download-btn">
+
+            <a href="/download">
+
+                <button>
+                    Download CSV Report
+                </button>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>
