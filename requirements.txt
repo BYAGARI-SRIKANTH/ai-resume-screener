@@ -1,9 +1,8 @@
-Flask
-gunicorn
-pdfplumber
+flask
+pandas
+numpy
 scikit-learn
 sentence-transformers
-torch==2.2.2
-transformers
-numpy
-pandas
+torch
+PyPDF2
+gunicorn
