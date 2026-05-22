@@ -1,7 +1,5 @@
 flask
 pdfplumber
 python-docx
-sentence-transformers
 scikit-learn
-torch
 gunicorn
