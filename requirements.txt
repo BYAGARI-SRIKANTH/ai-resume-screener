@@ -1,9 +1,7 @@
-flask==3.0.0
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.4.2
-sentence-transformers==2.2.2
-torch==2.2.2
-PyPDF2==3.0.1
+flask
 pdfplumber
-gunicorn==21.2.0
+python-docx
+sentence-transformers
+scikit-learn
+torch
+gunicorn

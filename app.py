@@ -1,68 +1,81 @@
-import csv
 import os
+import csv
 import pdfplumber
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    send_file
-)
+from flask import Flask, render_template, request
+from docx import Document
 
 from utils import (
     clean_text,
     extract_skills,
     extract_email,
-    extract_phone
+    extract_phone,
+    generate_suggestions
 )
 
 from similarity import calculate_similarity
-from question_generator import generate_questions
+
 
 app = Flask(__name__)
 
-# Upload folder
 UPLOAD_FOLDER = "uploads"
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Create upload folder
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Default skills
-MASTER_SKILLS = [
-    "python",
-    "sql",
-    "machine learning",
-    "deep learning",
-    "data analysis",
-    "communication",
-    "flask",
-    "django",
-    "tensorflow",
-    "pandas",
-    "numpy"
-]
+
+# Read Resume File
+def read_resume(file_path):
+
+    text = ""
+
+    # PDF
+    if file_path.endswith(".pdf"):
+
+        with pdfplumber.open(file_path) as pdf:
+
+            for page in pdf.pages:
+
+                extracted = page.extract_text()
+
+                if extracted:
+                    text += extracted
+
+    # DOCX
+    elif file_path.endswith(".docx"):
+
+        doc = Document(file_path)
+
+        for para in doc.paragraphs:
+            text += para.text + "\n"
+
+    # TXT
+    elif file_path.endswith(".txt"):
+
+        with open(file_path, "r", encoding="utf-8") as file:
+            text = file.read()
+
+    return text
 
 
 @app.route("/", methods=["GET", "POST"])
+
 def home():
 
     results = []
-
-    detected_jd_skills = []
+    jd_skills = []
 
     if request.method == "POST":
 
-        job_description = request.form["job_description"]
-
         uploaded_files = request.files.getlist("resume")
+
+        job_description = request.form["job_description"]
 
         cleaned_jd = clean_text(job_description)
 
         jd_skills = extract_skills(cleaned_jd)
-
-        detected_jd_skills = jd_skills
 
         for uploaded_file in uploaded_files:
 
@@ -75,25 +88,21 @@ def home():
 
                 uploaded_file.save(file_path)
 
-                # Extract PDF text
-                text = ""
+                # Read resume
+                text = read_resume(file_path)
 
-                with pdfplumber.open(file_path) as pdf:
-
-                    for page in pdf.pages:
-
-                        extracted = page.extract_text()
-
-                        if extracted:
-                            text += extracted
-
-                # Clean text
                 cleaned_resume = clean_text(text)
 
-                # Extract skills
+                # Resume skills
                 resume_skills = extract_skills(cleaned_resume)
 
-                # Matched skills
+                # AI Score
+                score = calculate_similarity(
+                    cleaned_resume,
+                    cleaned_jd
+                )
+
+                # Matched Skills
                 matched_skills = []
 
                 for skill in resume_skills:
@@ -101,7 +110,7 @@ def home():
                     if skill in jd_skills:
                         matched_skills.append(skill)
 
-                # Missing skills
+                # Missing Skills
                 missing_skills = []
 
                 for skill in jd_skills:
@@ -109,11 +118,15 @@ def home():
                     if skill not in resume_skills:
                         missing_skills.append(skill)
 
-                # AI similarity
-                score = calculate_similarity(
-                    cleaned_resume,
-                    cleaned_jd
+                # Suggestions
+                suggestions = generate_suggestions(
+                    missing_skills
                 )
+
+                # Email + Phone
+                email = extract_email(text)
+
+                phone = extract_phone(text)
 
                 # Recommendation
                 if score >= 75:
@@ -123,29 +136,16 @@ def home():
                     recommendation = "Good Match"
 
                 else:
-                    recommendation = "Needs Improvement"
+                    recommendation = "Average Match"
 
-                # AI feedback
-                if len(missing_skills) == 0:
-                    feedback = "Candidate matches all required skills."
-
-                else:
-                    feedback = (
-                        "Candidate matches most required skills "
-                        "but has some missing areas."
-                    )
-
-                # Interview questions
-                questions = generate_questions(matched_skills)
-
-                # Contact extraction
-                email = extract_email(text)
-                phone = extract_phone(text)
-
-                # Add result
+                # Store results
                 results.append({
 
                     "filename": uploaded_file.filename,
+
+                    "email": email,
+
+                    "phone": phone,
 
                     "score": score,
 
@@ -153,18 +153,12 @@ def home():
 
                     "missing": missing_skills,
 
-                    "recommendation": recommendation,
+                    "suggestions": suggestions,
 
-                    "feedback": feedback,
-
-                    "questions": questions,
-
-                    "email": email,
-
-                    "phone": phone
+                    "recommendation": recommendation
                 })
 
-        # Sort by score
+        # Sort ranking
         results = sorted(
             results,
             key=lambda x: x["score"],
@@ -182,41 +176,32 @@ def home():
             writer = csv.writer(file)
 
             writer.writerow([
-                "Rank",
                 "Resume",
-                "Score",
-                "Recommendation",
                 "Email",
-                "Phone"
+                "Phone",
+                "AI Score",
+                "Matched Skills",
+                "Missing Skills"
             ])
 
-            for index, candidate in enumerate(results, start=1):
+            for candidate in results:
 
                 writer.writerow([
-                    index,
                     candidate["filename"],
-                    candidate["score"],
-                    candidate["recommendation"],
                     candidate["email"],
-                    candidate["phone"]
+                    candidate["phone"],
+                    candidate["score"],
+                    ", ".join(candidate["matched"]),
+                    ", ".join(candidate["missing"])
                 ])
 
     return render_template(
         "index.html",
         results=results,
-        total_resumes=len(results),
-        detected_jd_skills=detected_jd_skills
-    )
-
-
-@app.route("/download")
-def download_file():
-
-    return send_file(
-        "candidate_rankings.csv",
-        as_attachment=True
+        jd_skills=jd_skills
     )
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+
+    app.run(debug=True)

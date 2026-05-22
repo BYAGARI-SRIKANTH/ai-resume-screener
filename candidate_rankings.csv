@@ -1,2 +1,4 @@
-Rank,Resume,Score,Recommendation,Email,Phone
-1,Srikanth_Byagari_Resume_ml.pdf,23.81,Needs Improvement,bsrikanth3934@gmail.com,Not Found
+Resume,Email,Phone,AI Score,Matched Skills,Missing Skills
+Srikanth_Byagari_Resume_AI.docx,byagarisrikanth0@gmail.com,,57.03,"python, deployment, api, javascript, java",react
+Data_Analyst_Resume_FHPL.docx,bsrikanth3934@gmail.com,91,42.01,python,"deployment, react, javascript, api, java"
+Srikanth_Byagari_Resume_ml.pdf,bsrikanth3934@gmail.com,Not Found,40.5,python,"deployment, react, javascript, api, java"

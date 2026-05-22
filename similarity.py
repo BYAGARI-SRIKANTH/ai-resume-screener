@@ -2,13 +2,10 @@ from sentence_transformers import SentenceTransformer
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-model = None
 
-def get_model():
-    global model
-    if model is None:
-        model = SentenceTransformer('all-MiniLM-L6-v2')
-    return model
+model = SentenceTransformer(
+    'all-MiniLM-L6-v2'
+)
 
 
 def calculate_similarity(
@@ -16,18 +13,14 @@ def calculate_similarity(
     job_description
 ):
 
-    resume_embedding = get_model().encode(...)
+    embeddings = model.encode([
+        resume_text,
+        job_description
+    ])
 
-    jd_embedding = model.encode(
-        [job_description]
-    )
-
-    similarity_score = cosine_similarity(
-        resume_embedding,
-        jd_embedding
+    similarity = cosine_similarity(
+        [embeddings[0]],
+        [embeddings[1]]
     )[0][0]
 
-    return round(
-        similarity_score * 100,
-        2
-    )
+    return round(similarity * 100, 2)
